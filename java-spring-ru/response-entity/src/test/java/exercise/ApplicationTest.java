@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,7 +41,8 @@ class ApplicationTest {
     @Test
     public void testIndex() throws Exception {
         mockMvc.perform(get("/posts"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "32"));
     }
 
     @Test
@@ -52,7 +54,7 @@ class ApplicationTest {
                 .content(om.writeValueAsString(post));
 
         mockMvc.perform(request)
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(om.writeValueAsString(post)));
     }
 
@@ -60,6 +62,12 @@ class ApplicationTest {
     public void testShow() throws Exception {
         mockMvc.perform(get("/posts/test-post"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testShowUnknown() throws Exception {
+        mockMvc.perform(get("/posts/unknown-post"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -77,6 +85,18 @@ class ApplicationTest {
         mockMvc.perform(get("/posts/test-post"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(om.writeValueAsString(post)));
+    }
+
+    @Test
+    public void testUpdateUnknownPost() throws Exception {
+        var post = new Post("unknown-post", "new title", "new body");
+
+        var request = put("/posts/unknown-post")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(post));
+
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent());
     }
 
     @Test

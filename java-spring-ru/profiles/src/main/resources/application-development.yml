@@ -1,0 +1,12 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    password: '123'
+    url: jdbc:h2:mem:test
+    username: sa
